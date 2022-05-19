@@ -1,0 +1,7 @@
+{
+    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+    "rust-client.disableRustup": true,
+    "rust.rustfmt_path": "rustfmt",
+    "rust.rust-analyzer.path": "rust-analyzer",
+    "rust-client.engine": "rust-analyzer",
+}

@@ -14,9 +14,10 @@
   outputs = { self, nixpkgs, flake-utils, flake-compat, mozilla-rust }:
   flake-utils.lib.eachDefaultSystem(system:
     let
-      pkgs = import nixpkgs { 
+      pkgs = import nixpkgs rec { 
         inherit system;
         overlays = [ mozilla-rust.overlay ]; 
+        stdenv.hostPlatform.rustc.config = "wasm32-unknown-unknown";
       };
 
       rust = (pkgs.rustChannelOf { rustToolchain = ./toolchain.toml; }).rust;
@@ -25,7 +26,7 @@
         rustc = rust;
       };
 
-      dependencies = with pkgs; [ rust rls rustfmt pkg-config ];
+      dependencies = with pkgs; [ rust rls rust-analyzer rustfmt pkg-config ];
 
     in pkgs.stdenv.mkDerivation rec {
       name = "wgpu-dunes";
