@@ -11,7 +11,8 @@
     mozilla-rust.url = "github:mozilla/nixpkgs-mozilla/master";
   };
 
-  outputs = { self, nixpkgs }: flake-utils.lib.eachDefaultSystem(system:
+  outputs = { self, nixpkgs, flake-utils, flake-compat, mozilla-rust }:
+  flake-utils.lib.eachDefaultSystem(system:
     let
       pkgs = import nixpkgs { 
         inherit system;
@@ -19,16 +20,18 @@
       };
 
       rust = (pkgs.rustChannelOf { rustToolchain = ./toolchain.toml; }).rust;
-      rustPlatform = makeRustPlatform {
+      rustPlatform = pkgs.makeRustPlatform {
         cargo = rust;
         rustc = rust;
       };
+
+      dependencies = with pkgs; [ rust rls rustfmt ];
 
     in rustPlatform.buildRustPackage rec {
       pname = "wgpu-dunes";
       version = "0.0.1";
 
-      src = fetchFromGitHub {
+      src = pkgs.fetchFromGitHub {
         owner = "jenr24";
         repo = pname;
       };
@@ -38,6 +41,12 @@
       };
 
       verifyCargoDeps = true;
+
+      buildInputs = dependencies;
+
+      devShell = {
+        buildInputs = dependencies;
+      };
     }
   );
 }
