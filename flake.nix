@@ -25,28 +25,32 @@
         rustc = rust;
       };
 
-      dependencies = with pkgs; [ rust rls rustfmt ];
+      dependencies = with pkgs; [ rust rls rustfmt pkg-config ];
 
-    in rustPlatform.buildRustPackage rec {
-      pname = "wgpu-dunes";
-      version = "0.0.1";
-
-      src = pkgs.fetchFromGitHub {
-        owner = "jenr24";
-        repo = pname;
-      };
-
-      cargoLock = {
-        lockFile = ./Cargo.lock;
-      };
-
-      verifyCargoDeps = true;
-
+    in pkgs.stdenv.mkDerivation rec {
+      name = "wgpu-dunes";
+      nativeBuildInputs = dependencies;
       buildInputs = dependencies;
 
-      devShell = {
-        buildInputs = dependencies;
-      };
+      defaultPackage = rustPlatform.buildRustPackage rec {
+        pname = name;
+        version = "0.0.1";
+
+        inherit buildInputs;
+        inherit nativeBuildInputs;
+
+        src = pkgs.fetchFromGitHub {
+          owner = "jenr24";
+          repo = pname;
+        };
+
+        cargoLock = {
+          lockFile = ./Cargo.lock;
+        };
+
+        verifyCargoDeps = true;
+    };
+
     }
   );
 }
