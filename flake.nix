@@ -39,10 +39,7 @@
         inherit buildInputs;
         inherit nativeBuildInputs;
 
-        src = pkgs.fetchFromGitHub {
-          owner = "jenr24";
-          repo = pname;
-        };
+        src = ./.;
 
         cargoLock = {
           lockFile = ./Cargo.lock;
