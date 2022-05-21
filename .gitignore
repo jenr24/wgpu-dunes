@@ -11,3 +11,6 @@ result/
 
 # Remove direnv conf
 .direnv/
+
+# wasm-pack artifacts
+pkg/
