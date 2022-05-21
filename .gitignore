@@ -6,6 +6,8 @@
 **/*.rs.bk
 
 
-# Added by cargo
+# Remove nix's result symlink
+result/
 
-/target
+# Remove direnv conf
+.direnv/
