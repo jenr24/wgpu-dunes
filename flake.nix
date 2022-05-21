@@ -8,47 +8,57 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
-    mozilla-rust.url = "github:mozilla/nixpkgs-mozilla/master";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, flake-compat, mozilla-rust }:
+  outputs = { self, nixpkgs, flake-utils, flake-compat, rust-overlay }:
   flake-utils.lib.eachDefaultSystem(system:
     let
-      pkgs = import nixpkgs rec { 
-        inherit system;
-        overlays = [ mozilla-rust.overlay ]; 
-        stdenv.hostPlatform.rustc.config = "wasm32-unknown-unknown";
-      };
+      overlays = [ rust-overlay.overlay ];
+      pkgs = import nixpkgs {  inherit system overlays; };
 
-      rust = (pkgs.rustChannelOf { rustToolchain = ./toolchain.toml; }).rust;
+      rust = pkgs.rust-bin.fromRustupToolchainFile ./toolchain.toml;
+
       rustPlatform = pkgs.makeRustPlatform {
         cargo = rust;
         rustc = rust;
       };
 
-      dependencies = with pkgs; [ rust rls rust-analyzer rustfmt pkg-config ];
+      dependencies = with pkgs; 
+        [ rust rust-analyzer rustfmt pkg-config wasm-bindgen-cli ];
 
-    in pkgs.stdenv.mkDerivation rec {
-      name = "wgpu-dunes";
-      nativeBuildInputs = dependencies;
-      buildInputs = dependencies;
+    in {
 
       defaultPackage = rustPlatform.buildRustPackage rec {
-        pname = name;
+        pname = "wgpu_dunes";
         version = "0.0.1";
 
-        inherit buildInputs;
-        inherit nativeBuildInputs;
+        nativeBuildInputs = dependencies;
 
         src = ./.;
+
+        buildPhase = ''
+          cargo build --release --target=wasm32-unknown-unknown
+        '';
+        
+        installPhase = ''
+          echo 'Creating out dir...'
+          mkdir -p $out/lib;
+
+          echo 'Installing wasm module to $out/lib/'
+          cp target/wasm32-unknown-unknown/release/${pname}.wasm $out/lib/;
+        '';
 
         cargoLock = {
           lockFile = ./Cargo.lock;
         };
 
         verifyCargoDeps = true;
-    };
-
+      };
+      devShell = pkgs.mkShell { packages = dependencies; };
     }
   );
 }

@@ -1,5 +1,8 @@
 {
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+    "rust-analyzer.cargo.noSysroot": true,
+    "rust-analyzer.server.extraEnv": { "RUSTUP_TOOLCHAIN": "./toolchain.toml" },
+    "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
     "rust-client.disableRustup": true,
     "rust.rustfmt_path": "rustfmt",
     "rust.rust-analyzer.path": "rust-analyzer",
