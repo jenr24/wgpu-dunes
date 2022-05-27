@@ -35,7 +35,16 @@
           pkg-config
           wasm-bindgen-cli
           wasm-pack
+          trunk
           openssl
+          xorg.libX11
+          xorg.libXcursor
+          xorg.libXrandr
+          xorg.libXi
+          mesa libGL
+          vulkan-headers
+          vulkan-loader
+          vulkan-tools
         ];
 
       in {
@@ -45,6 +54,13 @@
           version = "0.0.1";
 
           nativeBuildInputs = dependencies;
+
+          buildInputs = [
+            pkgs.mesa pkgs.libGL
+            pkgs.vulkan-headers
+            pkgs.vulkan-loader
+            pkgs.vulkan-tools
+          ];
 
           src = ./.;
 
