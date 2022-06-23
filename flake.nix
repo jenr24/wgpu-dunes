@@ -56,6 +56,7 @@
           nativeBuildInputs = dependencies;
 
           buildInputs = [
+            pkgs.wasm-bindgen-cli
             pkgs.mesa pkgs.libGL
             pkgs.vulkan-headers
             pkgs.vulkan-loader

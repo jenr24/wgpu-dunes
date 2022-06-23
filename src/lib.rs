@@ -2,7 +2,7 @@ mod state;
 mod vertex;
 mod image;
 
-mod compute;
+// mod compute;
 
 use winit::{
     event::*,
@@ -29,7 +29,8 @@ fn init_logger() {
     }
 }
 
-#[wasm_bindgen]
+// * Used on both Native and WASM
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub struct Canvas {
     event_loop: EventLoop<()>,
     window: Window,
@@ -39,26 +40,30 @@ pub struct Canvas {
 // *** API functions ***
 // *********************
 
-#[wasm_bindgen]
-pub fn create_canvas() -> Canvas {
+// * Used in both native and WASM
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
+pub fn create_canvas(width: u32, height: u32) -> Canvas {
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new().build(&event_loop).unwrap();
 
     #[cfg(target_arch = "wasm32")] {
         use winit::dpi::PhysicalSize;
-        window.set_inner_size(PhysicalSize::new(450, 400));
+        window.set_inner_size(PhysicalSize::new(width, height));
     }
     
     Canvas { event_loop, window }
 }
 
+// * Only used with WASM, compilation disabled on Native
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 pub fn get_canvas_element(canvas: &Canvas) -> Element {
     use winit::platform::web::WindowExtWebSys;
     web_sys::Element::from(canvas.window.canvas())
 }
 
-#[wasm_bindgen]
+// * Necessary for both native and WASM
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub async fn run_canvas_loop(app: Canvas) {
     let window = app.window;
     let event_loop = app.event_loop;
@@ -69,6 +74,7 @@ pub async fn run_canvas_loop(app: Canvas) {
 // *********************
 // *********************
 
+// * Basically works like a React entry point
 #[cfg(target_arch = "wasm32")]
 fn append_to_document(element: &Element) {
     web_sys::window()
@@ -135,14 +141,17 @@ pub async fn run_window_event_loop(window: Window, event_loop: EventLoop<()>) {
         });   
 }
 
-
+// * Used on both Native and WASM
+// * Only used on WASM for the trunk dev server
+// * This is the entry point for Native
+// TODO: Create binary for Native
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub async fn run() {
     init_logger();
 
-    let canvas = create_canvas();
+    let canvas = create_canvas(800, 500);
 
-    // TODO: export canvas element 
+    // * A little hacky but the canvas should be the only element on the dev page
     #[cfg(target_arch = "wasm32")] {
         let canvas = get_canvas_element(&canvas);
         append_to_document(&canvas);
